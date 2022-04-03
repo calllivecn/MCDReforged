@@ -51,7 +51,14 @@ class RconConnection:
 	def __receive(self, length):
 		data = bytes()
 		while len(data) < length:
-			data += self.socket.recv(min(self.BUFFER_SIZE, length - len(data)))
+            d = self.socket.recv(min(self.BUFFER_SIZE, length - len(data)))
+            if d == b"":
+                # 需要重连.
+                while not connect():
+                    time.sleep(0.1)
+                    print("Rcon 断开重连")
+
+			data += d
 		return data
 
 	def __receive_packet(self):
