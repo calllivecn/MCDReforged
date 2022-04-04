@@ -6,6 +6,7 @@ import struct
 import time
 from logging import Logger
 from threading import RLock
+import traceback
 from typing import Optional
 
 
@@ -27,6 +28,9 @@ class Packet:
 		data = struct.pack('<ii', self.packet_id, self.packet_type) + bytes(self.payload + '\x00\x00', encoding='utf8')
 		return struct.pack('<i', len(data)) + data
 
+
+class ServerShutdown(Exception):
+	pass
 
 class RconConnection:
 	BUFFER_SIZE = 2**10
@@ -51,13 +55,11 @@ class RconConnection:
 	def __receive(self, length):
 		data = bytes()
 		while len(data) < length:
-                    d = self.socket.recv(min(self.BUFFER_SIZE, length - len(data)))
-                    if d == b"":
-                        # 需要重连.
-                        while not connect():
-                            time.sleep(0.1)
-                            print("Rcon 断开重连")
-                    data += d
+			d = self.socket.recv(min(self.BUFFER_SIZE, length - len(data)))
+			if d == b"":
+				# 对方关闭连接，需要重连.
+				raise ServerShutdown("Server Thread RCON Client shutting down")
+			data += d
 
 		return data
 
@@ -90,7 +92,7 @@ class RconConnection:
 		self.socket.close()
 		self.socket = None
 
-	def send_command(self, command: str, max_retry_time: int = 3) -> Optional[str]:
+	def send_command(self, command: str, max_retry_time: int = 5) -> Optional[str]:
 		with self.command_lock:
 			for i in range(max_retry_time):
 				try:
@@ -99,19 +101,33 @@ class RconConnection:
 					result = ''
 					while True:
 						packet = self.__receive_packet()
+
 						if packet.payload == 'Unknown request {}'.format(hex(PacketType.ENDING_PACKET)[2:]):
 							break
+
 						result += packet.payload
+
 					return result
-				except:
+				except ServerShutdown:
+					traceback.print_exc()
+
+					while not self.connect():
+						self.logger.warning("Rcon 断开尝试重连")
+						time.sleep(0.1)
+						continue
+
+				except Exception:
+
 					if self.logger is not None:
 						self.logger.warning('Rcon Fail to received packet')
+
 					try:
 						self.disconnect()
 						if self.connect():  # next try
 							continue
-					except:
+					except Exception:
 						pass
+
 					break
 		return None
 
