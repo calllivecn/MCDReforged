@@ -17,8 +17,8 @@ In this example, we have a vanilla server, but some of the players have a prefix
 
 .. code-block::
 
-   <[Builder]Steve> Hello
-   <[Builder]Steve> !!MCDR status
+    <[Builder]Steve> Hello
+    <[Builder]Steve> !!MCDR status
 
 For the default vanilla handler, ``[Builder]Steve`` is an illegal player name. Luckily all possible prefixes of the players in the server follows the same format ``[Prefix] PlayerName``. So it's possible to make a dedicated handler for the server
 
@@ -43,15 +43,15 @@ For example, the following codes above creates a handler than is able to handle 
                     result.player, result.content = parsed['name'], parsed['message']
             return result
 
-And then you are able to use this handler to handle the server. You need to do the following things in the configure file
+And then you are able to use this handler to handle the server. You need to do the following things in the configuration file
 
 
-#. Set the ``handler`` option in the configure file to ``the_handler_for_my_server``
+#. Set the ``handler`` option in the configuration file to ``the_handler_for_my_server``
 #. Added the path to the custom handler in the `custom_handlers <../configure.html#custom-handlers>`__ option, e.g:
 
 .. code-block::
 
-   custom_handlers:
-   - the.package.to.my.handler.MyHandler
+    custom_handlers:
+    - the.package.to.my.handler.MyHandler
 
 That's all you need to do

@@ -29,13 +29,13 @@ To implement these commands, we can build a command tree with MCDR like this:
 
 .. code-block::
 
-   Literal('!!email')
-    ├─ Literal('list')
-    ├─ Literal('remove')
-    │   └─ Integer('email_id')
-    └─ Literal('send')
-        └─ Text('player')
-            └─ GreedyText('message')
+    Literal('!!email')
+     ├─ Literal('list')
+     ├─ Literal('remove')
+     │   └─ Integer('email_id')
+     └─ Literal('send')
+         └─ Text('player')
+             └─ GreedyText('message')
 
 When MCDR executes the command ``!!email remove 21``, the following things will happen
 
@@ -502,6 +502,7 @@ Here's a quick example of a custom Argument node, ``PointArgument``. It accepts 
             total_read = 0
             coords = []
             for i in range(3):
+                total_read += len(text[total_read:]) - len(command_builder_util.remove_divider_prefix(text[total_read:]))
                 value, read = command_builder_util.get_float(text[total_read:])
                 if read == 0:
                     raise IncompletePoint(total_read)

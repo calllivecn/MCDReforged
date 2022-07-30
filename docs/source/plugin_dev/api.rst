@@ -95,7 +95,7 @@ In addition to simply and directly use a raw ``@new_thread``, it's recommend to 
 
     @new_thread('My Plugin Thread')
     def do_something3(text: str):
-        print(threading.current_thread().getName())  # will be "My Plugin Thread"
+        print(threading.current_thread().name)  # will be "My Plugin Thread"
         time.sleep(10)
 
 So when you logs something by ``server.logger``, a meaningful thread name will be displayed instead of a plain and meaningless ``Thread-3``
@@ -129,6 +129,48 @@ Which is equivalent to:
 
     def on_load(server, old):
         server.register_event_listener(MCDRPluginEvents.GENERAL_INFO, my_on_info)
+
+spam_proof
+^^^^^^^^^^
+
+Use a lock to protect the decorated function from being invoked on multiple threads at the same time
+
+If a multiple-invocation happens, only the first invocation can be executed normally, other invocations will be skipped
+
+The type of the lock can be specified with the ``lock_class`` parameter, for example it can be ``threading.RLock`` (default) or ``threading.Lock``
+
+The return value of the decorated function is modified into a bool, indicating if this invocation is executed normally
+
+The decorated function has 2 extra fields:
+
+- ``original`` field: stores the original undecorated function
+- ``lock`` field: stores the lock object used in the spam proof logic
+
+Example:
+
+.. code-block:: python
+
+    @spam_proof
+    def some_work(arg):
+        # doing some important logics
+        foo = 1
+
+Which is equivalent to:
+
+.. code-block:: python
+
+    lock = threading.RLock()
+
+    def some_work(arg) -> bool:
+        acquired = lock.acquire(blocking=False)
+        if acquired:
+            try:
+                # doing some important logics
+                foo = 1
+            finally:
+                lock.release()
+        return acquired
+
 
 event
 -----
@@ -377,7 +419,7 @@ Example:
     RTextBase.join(RText(',', color=RColor.gray), [RText('1'), '2', 3])  # 1,2,3
 
 format
-~~~~~~~~
+~~~~~~
 
 .. code-block:: python
 
@@ -391,6 +433,22 @@ Example:
 .. code-block:: python
 
     RTextBase.format('a={},b={},c={c}', RText('1', color=RColor.blue), '2', c=3)  # a=1,b=2,c=3
+
+from_json_object
+~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    @classmethod
+    def from_json_object(cls, data: Union[str, list, dict]) -> RTextBase
+
+Convert a json object into a RText component
+
+Example:
+
+.. code-block:: python
+
+    text = RTextBase.from_json_object({'text': 'my text', 'color': 'red'})
 
 RText
 ^^^^^

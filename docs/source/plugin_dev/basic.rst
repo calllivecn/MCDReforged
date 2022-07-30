@@ -7,7 +7,7 @@ What is a MCDR plugin
 
 A MCDR plugin is a single ``.py`` or ``.mcdr`` file or a directory with specific file structure located in plugin directories. See `here <plugin_format.html>`__ for more information about plugin format
 
-The list of the plugin directory can be defined inside the `configure file <../configure.html#plugin_directories>`__. At start up, MCDR will automatically load every plugin inside every plugin directory
+The list of the plugin directory can be defined inside the `configuration file <../configure.html#plugin_directories>`__. At start up, MCDR will automatically load every plugin inside every plugin directory
 
 Check the `example plugin repository <https://github.com/MCDReforged/MCDReforged-ExamplePlugin>`__ or the `plugin template repository <https://github.com/MCDReforged/MCDReforged-PluginTemplate>`__ for more references
 
@@ -32,14 +32,14 @@ open it and enter these code
     }
 
 
-   def on_load(server, old):
-       server.logger.info('Hello world!')
+    def on_load(server, old):
+        server.logger.info('Hello world!')
 
 Return to MCDR console, enter ``!!MCDR reload plugin``, and you should see the hello world message from your plugin
 
 .. code-block::
 
-   [TaskExecutor/INFO] [hello_world]: Hello world!
+    [TaskExecutor/INFO] [hello_world]: Hello world!
 
 Great, you have successfully created your first plugin
 
